@@ -1,16 +1,14 @@
 package com.company.model;
 
-import java.util.Date;
-
-public class Employee {
+public class EmployeeInfo {
     private int employee_Id;
     private String first_Name;
     private String last_Name;
-    private int title_Id;
     private double salary;
-    private String startDate;
-    private String endDate;
-    private int employmentStatus_Id;
+    private String title_Name;
+    private String department_Name;
+    private String start_Date;
+    private String end_Date;
 
     public int getEmployee_Id() {
         return employee_Id;
@@ -36,14 +34,6 @@ public class Employee {
         this.last_Name = last_Name;
     }
 
-    public int getTitle_Id() {
-        return title_Id;
-    }
-
-    public void setTitle_Id(int title_Id) {
-        this.title_Id = title_Id;
-    }
-
     public double getSalary() {
         return salary;
     }
@@ -52,27 +42,35 @@ public class Employee {
         this.salary = salary;
     }
 
-    public String getStartDate() {
-        return startDate;
+    public String getTitle_Name() {
+        return title_Name;
     }
 
-    public void setStartDate(String startDate) {
-        this.startDate = startDate;
+    public void setTitle_Name(String title_Name) {
+        this.title_Name = title_Name;
     }
 
-    public String getEndDate() {
-        return endDate;
+    public String getDepartment_Name() {
+        return department_Name;
     }
 
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
+    public void setDepartment_Name(String department_Name) {
+        this.department_Name = department_Name;
     }
 
-    public int getEmploymentStatus_Id() {
-        return employmentStatus_Id;
+    public String getStart_Date() {
+        return start_Date;
     }
 
-    public void setEmploymentStatus_Id(int employmentStatus_Id) {
-        this.employmentStatus_Id = employmentStatus_Id;
+    public void setStart_Date(String start_Date) {
+        this.start_Date = start_Date;
+    }
+
+    public String getEnd_Date() {
+        return end_Date;
+    }
+
+    public void setEnd_Date(String end_Date) {
+        this.end_Date = end_Date;
     }
 }
