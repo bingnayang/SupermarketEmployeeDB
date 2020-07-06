@@ -66,11 +66,33 @@ public class Datasource {
             " AND "+TABLE_DEPARTMENT+"."+COLUMN_DEPARTMENT_ID+"="+TABLE_TITLE+"."+COLUMN_TITLE_DEPARTMENT_ID+
             " AND "+TABLE_DEPARTMENT+"."+COLUMN_DEPARTMENT_NAME+"=?";
 
+//    SELECT employee.first_name, employee.last_name
+//    FROM employee
+//    INNER JOIN title
+//    WHERE employee.title_Id = title.title_Id
+//    AND title.title_Name = "Cashier"
+    private static final String QUERY_EMPLOYEES_BY_TITLE =
+            "SELECT "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_FIRST_NAME+","+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_LAST_NAME+
+            " FROM "+TABLE_EMPLOYEE+
+            " INNER JOIN "+TABLE_TITLE+
+            " WHERE "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_TITLE_ID+"="+TABLE_TITLE+"."+COLUMN_TITLE_ID+
+            " AND "+TABLE_TITLE+"."+COLUMN_TITLE_NAME+"=?";
+
+//    SELECT *
+//    FROM employeeInfo
+//    WHERE employeeInfo.first_name="Pedro" AND employeeInfo.last_name="Mose"
+    private static final String QUERY_EMPLOYEE_BY_NAME =
+            "SELECT * "+
+            " FROM "+TABLE_EMPLOYEEINFO+
+            " WHERE "+TABLE_EMPLOYEEINFO+"."+COLUMN_EMPLOYEEINFO_FIRST_NAME+"=?"+
+            " AND "+TABLE_EMPLOYEEINFO+"."+COLUMN_EMPLOYEEINFO_LAST_NAME+"=?";
 
     private Connection connection;
 
     private PreparedStatement queryEmployees;
     private PreparedStatement queryEmployeesByDepartment;
+    private PreparedStatement queryEmployeesByTitle;
+    private PreparedStatement queryEmployeeByName;
 
 
     // Open Connection
@@ -80,6 +102,8 @@ public class Datasource {
 
             queryEmployees = connection.prepareStatement(QUERY_EMPLOYEES);
             queryEmployeesByDepartment = connection.prepareStatement(QUERY_EMPLOYEES_BY_DEPARTMENT);
+            queryEmployeesByTitle = connection.prepareStatement(QUERY_EMPLOYEES_BY_TITLE);
+            queryEmployeeByName = connection.prepareStatement(QUERY_EMPLOYEE_BY_NAME);
 
             return true;
         }catch (SQLException e){
@@ -96,6 +120,12 @@ public class Datasource {
             }
             if(queryEmployeesByDepartment != null){
                 queryEmployeesByDepartment.close();
+            }
+            if(queryEmployeesByTitle != null){
+                queryEmployeesByTitle.close();
+            }
+            if(queryEmployeeByName != null){
+                queryEmployeeByName.close();
             }
 
             if (connection != null) {
@@ -129,7 +159,8 @@ public class Datasource {
             return null;
         }
     }
-    public List<String> queryEmployeeByDepartment(String deptName){
+
+    public List<String> queryAllEmployeesByDepartment(String deptName){
         try{
             queryEmployeesByDepartment.setString(1,deptName);
             ResultSet resultSet = queryEmployeesByDepartment.executeQuery();
@@ -140,6 +171,47 @@ public class Datasource {
                                     "\nTitle: "+resultSet.getString(3)+"\n");
             }
             return employeesList;
+        }catch (SQLException e){
+            System.out.println("Query failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public List<String> queryEmployeesByTitle(String titleName){
+        try{
+            queryEmployeesByTitle.setString(1,titleName);
+            ResultSet resultSet = queryEmployeesByTitle.executeQuery();
+            List<String> employeesList = new ArrayList<>();
+            while (resultSet.next()){
+                employeesList.add("Name: "+resultSet.getString(1)+" "+resultSet.getString(2));
+            }
+            return employeesList;
+        }catch (SQLException e){
+            System.out.println("Query failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public List<EmployeeInfo> queryEmployeeByName(String firstName, String lastName){
+        try{
+            queryEmployeeByName.setString(1,firstName);
+            queryEmployeeByName.setString(2,lastName);
+            ResultSet resultSet = queryEmployeeByName.executeQuery();
+            List<EmployeeInfo> employeesList = new ArrayList<>();
+            while (resultSet.next()){
+                EmployeeInfo employeeInfo = new EmployeeInfo();
+                employeeInfo.setEmployee_Id(resultSet.getInt(1));
+                employeeInfo.setFirst_Name(resultSet.getString(2));
+                employeeInfo.setLast_Name(resultSet.getString(3));
+                employeeInfo.setSalary(resultSet.getDouble(4));
+                employeeInfo.setTitle_Name(resultSet.getString(5));
+                employeeInfo.setDepartment_Name(resultSet.getString(6));
+                employeeInfo.setStart_Date(resultSet.getString(7));
+                employeeInfo.setEnd_Date(resultSet.getString(8));
+                employeesList.add(employeeInfo);
+            }
+            return employeesList;
+
         }catch (SQLException e){
             System.out.println("Query failed: " + e.getMessage());
             return null;
