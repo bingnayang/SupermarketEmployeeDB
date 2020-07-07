@@ -30,7 +30,7 @@ public class Datasource {
     public static final String COLUMN_TITLE_NAME = "title_Name";
     public static final String COLUMN_TITLE_DEPARTMENT_ID = "department_Id";
     // Employment Status Table
-    public static final String TABLE_Employment_Status = "employmentStatus";
+    public static final String TABLE_EMPLOYMENT_STATUS = "employmentStatus";
     public static final String COLUMN_EMPLOYMENT_STATUS_ID = "employment_Status_Id";
     public static final String COLUMN_EMPLOYMENT_STATUS = "employment_Status";
     // EmployeeInfo View Table
@@ -66,11 +66,11 @@ public class Datasource {
             " AND "+TABLE_DEPARTMENT+"."+COLUMN_DEPARTMENT_ID+"="+TABLE_TITLE+"."+COLUMN_TITLE_DEPARTMENT_ID+
             " AND "+TABLE_DEPARTMENT+"."+COLUMN_DEPARTMENT_NAME+"=?";
 
-//    SELECT employee.first_name, employee.last_name
-//    FROM employee
-//    INNER JOIN title
-//    WHERE employee.title_Id = title.title_Id
-//    AND title.title_Name = "Cashier"
+    //    SELECT employee.first_name, employee.last_name
+    //    FROM employee
+    //    INNER JOIN title
+    //    WHERE employee.title_Id = title.title_Id
+    //    AND title.title_Name = "Cashier"
     private static final String QUERY_EMPLOYEES_BY_TITLE =
             "SELECT "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_FIRST_NAME+","+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_LAST_NAME+
             " FROM "+TABLE_EMPLOYEE+
@@ -78,14 +78,59 @@ public class Datasource {
             " WHERE "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_TITLE_ID+"="+TABLE_TITLE+"."+COLUMN_TITLE_ID+
             " AND "+TABLE_TITLE+"."+COLUMN_TITLE_NAME+"=?";
 
-//    SELECT *
-//    FROM employeeInfo
-//    WHERE employeeInfo.first_name="Pedro" AND employeeInfo.last_name="Mose"
+    //    SELECT *
+    //    FROM employeeInfo
+    //    WHERE employeeInfo.first_name="Pedro" AND employeeInfo.last_name="Mose"
     private static final String QUERY_EMPLOYEE_BY_NAME =
             "SELECT * "+
             " FROM "+TABLE_EMPLOYEEINFO+
             " WHERE "+TABLE_EMPLOYEEINFO+"."+COLUMN_EMPLOYEEINFO_FIRST_NAME+"=?"+
             " AND "+TABLE_EMPLOYEEINFO+"."+COLUMN_EMPLOYEEINFO_LAST_NAME+"=?";
+
+    // INSERT INTO employee
+    // (first_name,last_name,title_Id,salary,startDate,endDate,employmentStatus) VALUES(?,?,?,?,?,?,?)
+    private static final String INSERT_NEW_EMPLOYEE =
+            "INSERT INTO " +TABLE_EMPLOYEE+
+            "("+COLUMN_EMPLOYEE_FIRST_NAME+","+
+                    COLUMN_EMPLOYEE_LAST_NAME+","+
+                    COLUMN_EMPLOYEE_TITLE_ID+","+
+                    COLUMN_EMPLOYEE_SALARY+","+
+                    COLUMN_EMPLOYEE_START_DATE+","+
+                    COLUMN_EMPLOYEE_END_DATE+","+
+                    COLUMN_EMPLOYEE_STATUS_ID+") VALUES(?,?,?,?,?,?,?)";
+
+
+//    UPDATE employee
+//    SET salary = "15.00"
+//    WHERE employee.first_name = "Tom"
+//    AND employee.last_name = "Burlington"
+//    AND employee_Id = 19
+    private static final String UPDATE_EMPLOYEE_SALARY =
+            "UPDATE "+TABLE_EMPLOYEE+
+            " SET "+COLUMN_EMPLOYEE_SALARY +"=?"+
+            " WHERE "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_ID+"=?"+
+            " AND "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_FIRST_NAME+"=?"+
+            " AND "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_LAST_NAME+"?";
+
+
+    private static final String UPDATE_EMPLOYEE_STATUS = "";
+    private static final String UPDATE_EMPLOYEE_TITLE = "";
+
+    //    SELECT employmentStatus.employment_Status_Id
+    //    FROM employmentStatus
+    //    WHERE employmentStatus.employment_Status = "Full Time"
+    private static final String QUERY_EMPLOYMENT_STATUS_ID =
+            "SELECT "+TABLE_EMPLOYMENT_STATUS+"."+COLUMN_EMPLOYMENT_STATUS_ID+
+            " FROM "+TABLE_EMPLOYMENT_STATUS+
+            " WHERE "+TABLE_EMPLOYMENT_STATUS+"."+COLUMN_EMPLOYMENT_STATUS+"=?";
+
+    //    SELECT title.title_Id
+    //    FROM title
+    //    WHERE title.title_Name = "Cashier"
+    private static final String QUERY_TITLE_ID =
+            "SELECT "+TABLE_TITLE+"."+COLUMN_TITLE_ID+
+            " FROM "+TABLE_TITLE+
+            " WHERE "+TABLE_TITLE+"."+COLUMN_TITLE_NAME+"=?";
 
     private Connection connection;
 
@@ -93,7 +138,11 @@ public class Datasource {
     private PreparedStatement queryEmployeesByDepartment;
     private PreparedStatement queryEmployeesByTitle;
     private PreparedStatement queryEmployeeByName;
-
+    private PreparedStatement insertIntoEmployee;
+    private PreparedStatement updateEmployeeSalary;
+//
+    private PreparedStatement queryEmploymentStatusId;
+    private PreparedStatement queryTitleId;
 
     // Open Connection
     public boolean open(){
@@ -104,6 +153,10 @@ public class Datasource {
             queryEmployeesByDepartment = connection.prepareStatement(QUERY_EMPLOYEES_BY_DEPARTMENT);
             queryEmployeesByTitle = connection.prepareStatement(QUERY_EMPLOYEES_BY_TITLE);
             queryEmployeeByName = connection.prepareStatement(QUERY_EMPLOYEE_BY_NAME);
+            insertIntoEmployee = connection.prepareStatement(INSERT_NEW_EMPLOYEE, Statement.RETURN_GENERATED_KEYS);
+
+            queryEmploymentStatusId = connection.prepareStatement(QUERY_EMPLOYMENT_STATUS_ID);
+            queryTitleId = connection.prepareStatement(QUERY_TITLE_ID);
 
             return true;
         }catch (SQLException e){
@@ -127,12 +180,47 @@ public class Datasource {
             if(queryEmployeeByName != null){
                 queryEmployeeByName.close();
             }
-
+            if(insertIntoEmployee != null){
+                insertIntoEmployee.close();
+            }
+            if(queryEmploymentStatusId != null){
+                queryEmploymentStatusId.close();
+            }
+            if(queryTitleId != null){
+                queryTitleId.close();
+            }
+            // Close Connection
             if (connection != null) {
                 connection.close();
             }
         }catch (SQLException e){
             System.out.println("Couldn't close connection: " + e.getMessage());
+        }
+    }
+
+    public int queryTitleIdByTitle(String titleName){
+        try{
+            queryTitleId.setString(1,titleName);
+            ResultSet resultSet = queryTitleId.executeQuery();
+
+            int titleId = resultSet.getInt(1);
+            return titleId;
+        }catch (SQLException e){
+            System.out.println("Title Id Query Failed: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    public int queryEmploymentStatusIdByStatus(String status){
+        try{
+            queryEmploymentStatusId.setString(1,status);
+            ResultSet resultSet = queryEmploymentStatusId.executeQuery();
+
+            int statusId = resultSet.getInt(1);
+            return statusId;
+        }catch (SQLException e){
+            System.out.println("Title Id Query Failed: " + e.getMessage());
+            return -1;
         }
     }
 
@@ -215,6 +303,45 @@ public class Datasource {
         }catch (SQLException e){
             System.out.println("Query failed: " + e.getMessage());
             return null;
+        }
+    }
+
+    public void insertNewEmployee(String firstName, String lastName, String title, double salary, String startDate, String endDate, String status){
+
+        try{
+            int titleID = queryTitleIdByTitle("Scanning Coordinator");
+            int statusID = queryEmploymentStatusIdByStatus("Part Time");
+
+            connection.setAutoCommit(false);
+            insertIntoEmployee.setString(1,"Tom"); // first name
+            insertIntoEmployee.setString(2,"Burlington"); // last
+            insertIntoEmployee.setInt(3,titleID); // title
+            insertIntoEmployee.setDouble(4,15.50); // salary
+            insertIntoEmployee.setString(5,"2019/01/01"); // start date
+            insertIntoEmployee.setString(6,""); // end date
+            insertIntoEmployee.setInt(7,statusID); // status
+            int affectedRows = insertIntoEmployee.executeUpdate();
+            if(affectedRows == 1) {
+                System.out.println("Employee Insert Succeed");
+                connection.commit();
+            } else {
+                throw new SQLException("The employee insert failed");
+            }
+        }catch (Exception e){
+            System.out.println("Insert Employee exception: " + e.getMessage());
+            try {
+                System.out.println("Performing rollback");
+                connection.rollback();
+            } catch(SQLException e2) {
+                System.out.println("Oh boy! Things are really bad! " + e2.getMessage());
+            }finally {
+                try {
+                    System.out.println("Resetting default commit behavior");
+                    connection.setAutoCommit(true);
+                } catch(SQLException e1) {
+                    System.out.println("Couldn't reset auto-commit! " + e1.getMessage());
+                }
+            }
         }
     }
 }

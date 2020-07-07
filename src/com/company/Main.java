@@ -32,6 +32,7 @@ public class Main {
                     searchEmployeeByName(datasource);
                     break;
                 case 5:
+                    datasource.insertNewEmployee();
                     break;
                 case 6:
                     System.out.println("Goodbye");
@@ -51,7 +52,7 @@ public class Main {
         System.out.println("2) Search Employees By Department Name");
         System.out.println("3) Search Employees By Title");
         System.out.println("4) Search Employee Info By Name");
-        System.out.println("5) ");
+        System.out.println("5) Add New Employee");
         System.out.println("6) Exit");
         System.out.print("Enter Your Option: ");
         System.out.println();
