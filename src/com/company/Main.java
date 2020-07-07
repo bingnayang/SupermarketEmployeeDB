@@ -32,16 +32,19 @@ public class Main {
                     searchEmployeeByName(datasource);
                     break;
                 case 5:
-                    datasource.insertNewEmployee();
+//                    datasource.insertNewEmployee();
                     break;
                 case 6:
+                    datasource.updateEmployeeSalaryByName();
+                    break;
+                case 7:
                     System.out.println("Goodbye");
                     break;
                 default:
                     System.out.println("Not an option");
                     break;
             }
-        }while (option != 6);
+        }while (option != 7);
 
         // Close connection
         datasource.close();
@@ -53,7 +56,8 @@ public class Main {
         System.out.println("3) Search Employees By Title");
         System.out.println("4) Search Employee Info By Name");
         System.out.println("5) Add New Employee");
-        System.out.println("6) Exit");
+        System.out.println("6) Update Employee Salary");
+        System.out.println("7) Exit");
         System.out.print("Enter Your Option: ");
         System.out.println();
     }

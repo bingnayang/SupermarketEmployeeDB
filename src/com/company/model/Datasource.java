@@ -104,14 +104,11 @@ public class Datasource {
 //    SET salary = "15.00"
 //    WHERE employee.first_name = "Tom"
 //    AND employee.last_name = "Burlington"
-//    AND employee_Id = 19
     private static final String UPDATE_EMPLOYEE_SALARY =
             "UPDATE "+TABLE_EMPLOYEE+
             " SET "+COLUMN_EMPLOYEE_SALARY +"=?"+
-            " WHERE "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_ID+"=?"+
-            " AND "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_FIRST_NAME+"=?"+
-            " AND "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_LAST_NAME+"?";
-
+            " WHERE "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_FIRST_NAME+"=?"+
+            " AND "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_LAST_NAME+"=?";
 
     private static final String UPDATE_EMPLOYEE_STATUS = "";
     private static final String UPDATE_EMPLOYEE_TITLE = "";
@@ -154,6 +151,7 @@ public class Datasource {
             queryEmployeesByTitle = connection.prepareStatement(QUERY_EMPLOYEES_BY_TITLE);
             queryEmployeeByName = connection.prepareStatement(QUERY_EMPLOYEE_BY_NAME);
             insertIntoEmployee = connection.prepareStatement(INSERT_NEW_EMPLOYEE, Statement.RETURN_GENERATED_KEYS);
+            updateEmployeeSalary = connection.prepareStatement(UPDATE_EMPLOYEE_SALARY);
 
             queryEmploymentStatusId = connection.prepareStatement(QUERY_EMPLOYMENT_STATUS_ID);
             queryTitleId = connection.prepareStatement(QUERY_TITLE_ID);
@@ -188,6 +186,9 @@ public class Datasource {
             }
             if(queryTitleId != null){
                 queryTitleId.close();
+            }
+            if(updateEmployeeSalary != null){
+                updateEmployeeSalary.close();
             }
             // Close Connection
             if (connection != null) {
@@ -344,4 +345,36 @@ public class Datasource {
             }
         }
     }
+
+    public void updateEmployeeSalaryByName(){
+        try{
+            connection.setAutoCommit(false);
+            updateEmployeeSalary.setString(1,"15.00");
+            updateEmployeeSalary.setString(2,"Tom");
+            updateEmployeeSalary.setString(3,"Burlington");
+            int affectedRows = updateEmployeeSalary.executeUpdate();
+            if(affectedRows == 1) {
+                System.out.println("Employee Update Succeed");
+                connection.commit();
+            } else {
+                throw new SQLException("The employee insert failed");
+            }
+        }catch (Exception e){
+            System.out.println("Update Employee exception: " + e.getMessage());
+            try {
+                System.out.println("Performing rollback");
+                connection.rollback();
+            } catch(SQLException e2) {
+                System.out.println("Oh boy! Things are really bad! " + e2.getMessage());
+            }finally {
+                try {
+                    System.out.println("Resetting default commit behavior");
+                    connection.setAutoCommit(true);
+                } catch(SQLException e1) {
+                    System.out.println("Couldn't reset auto-commit! " + e1.getMessage());
+                }
+            }
+        }
+    }
+
 }
