@@ -100,10 +100,10 @@ public class Datasource {
                     COLUMN_EMPLOYEE_STATUS_ID+") VALUES(?,?,?,?,?,?,?)";
 
 
-//    UPDATE employee
-//    SET salary = "15.00"
-//    WHERE employee.first_name = "Tom"
-//    AND employee.last_name = "Burlington"
+    //    UPDATE employee
+    //    SET salary = "15.00"
+    //    WHERE employee.first_name = "Tom"
+    //    AND employee.last_name = "Burlington"
     private static final String UPDATE_EMPLOYEE_SALARY =
             "UPDATE "+TABLE_EMPLOYEE+
             " SET "+COLUMN_EMPLOYEE_SALARY +"=?"+
@@ -112,6 +112,16 @@ public class Datasource {
 
     private static final String UPDATE_EMPLOYEE_STATUS = "";
     private static final String UPDATE_EMPLOYEE_TITLE = "";
+
+    //    UPDATE employee
+    //    SET endDate = "2020/04/01"
+    //    WHERE employee.first_name = "Jay"
+    //    AND employee.last_name="Salmon"
+    private static final String UPDATE_EMPLOYEE_ENDDATE =
+            "UPDATE "+TABLE_EMPLOYEE+
+            " SET "+COLUMN_EMPLOYEE_END_DATE +"=?"+
+            " WHERE "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_FIRST_NAME+"=?"+
+            " AND "+TABLE_EMPLOYEE+"."+COLUMN_EMPLOYEE_LAST_NAME+"=?";
 
     //    SELECT employmentStatus.employment_Status_Id
     //    FROM employmentStatus
@@ -137,7 +147,8 @@ public class Datasource {
     private PreparedStatement queryEmployeeByName;
     private PreparedStatement insertIntoEmployee;
     private PreparedStatement updateEmployeeSalary;
-//
+    private PreparedStatement updateEmployeeEndDate;
+
     private PreparedStatement queryEmploymentStatusId;
     private PreparedStatement queryTitleId;
 
@@ -152,6 +163,7 @@ public class Datasource {
             queryEmployeeByName = connection.prepareStatement(QUERY_EMPLOYEE_BY_NAME);
             insertIntoEmployee = connection.prepareStatement(INSERT_NEW_EMPLOYEE, Statement.RETURN_GENERATED_KEYS);
             updateEmployeeSalary = connection.prepareStatement(UPDATE_EMPLOYEE_SALARY);
+            updateEmployeeEndDate = connection.prepareStatement(UPDATE_EMPLOYEE_ENDDATE);
 
             queryEmploymentStatusId = connection.prepareStatement(QUERY_EMPLOYMENT_STATUS_ID);
             queryTitleId = connection.prepareStatement(QUERY_TITLE_ID);
@@ -190,6 +202,9 @@ public class Datasource {
             if(updateEmployeeSalary != null){
                 updateEmployeeSalary.close();
             }
+            if(updateEmployeeEndDate != null){
+                updateEmployeeEndDate.close();
+            }
             // Close Connection
             if (connection != null) {
                 connection.close();
@@ -207,7 +222,7 @@ public class Datasource {
             int titleId = resultSet.getInt(1);
             return titleId;
         }catch (SQLException e){
-            System.out.println("Title Id Query Failed: " + e.getMessage());
+//            System.out.println("Title Id Query Failed: " + e.getMessage());
             return -1;
         }
     }
@@ -220,7 +235,7 @@ public class Datasource {
             int statusId = resultSet.getInt(1);
             return statusId;
         }catch (SQLException e){
-            System.out.println("Title Id Query Failed: " + e.getMessage());
+//            System.out.println("Title Id Query Failed: " + e.getMessage());
             return -1;
         }
     }
@@ -307,20 +322,17 @@ public class Datasource {
         }
     }
 
-    public void insertNewEmployee(String firstName, String lastName, String title, double salary, String startDate, String endDate, String status){
+    public void insertNewEmployee(String firstName, String lastName, int title, double salary, String startDate, int status){
 
         try{
-            int titleID = queryTitleIdByTitle("Scanning Coordinator");
-            int statusID = queryEmploymentStatusIdByStatus("Part Time");
-
             connection.setAutoCommit(false);
-            insertIntoEmployee.setString(1,"Tom"); // first name
-            insertIntoEmployee.setString(2,"Burlington"); // last
-            insertIntoEmployee.setInt(3,titleID); // title
-            insertIntoEmployee.setDouble(4,15.50); // salary
-            insertIntoEmployee.setString(5,"2019/01/01"); // start date
+            insertIntoEmployee.setString(1,firstName); // first name
+            insertIntoEmployee.setString(2,lastName); // last
+            insertIntoEmployee.setInt(3,title); // title
+            insertIntoEmployee.setDouble(4,salary); // salary
+            insertIntoEmployee.setString(5,startDate); // start date
             insertIntoEmployee.setString(6,""); // end date
-            insertIntoEmployee.setInt(7,statusID); // status
+            insertIntoEmployee.setInt(7,status); // status
             int affectedRows = insertIntoEmployee.executeUpdate();
             if(affectedRows == 1) {
                 System.out.println("Employee Insert Succeed");
@@ -346,12 +358,12 @@ public class Datasource {
         }
     }
 
-    public void updateEmployeeSalaryByName(){
+    public void updateEmployeeSalaryByName(double newSalary,String firstName, String lastName){
         try{
             connection.setAutoCommit(false);
-            updateEmployeeSalary.setString(1,"15.00");
-            updateEmployeeSalary.setString(2,"Tom");
-            updateEmployeeSalary.setString(3,"Burlington");
+            updateEmployeeSalary.setDouble(1,newSalary);
+            updateEmployeeSalary.setString(2,firstName);
+            updateEmployeeSalary.setString(3,lastName);
             int affectedRows = updateEmployeeSalary.executeUpdate();
             if(affectedRows == 1) {
                 System.out.println("Employee Update Succeed");
@@ -376,5 +388,34 @@ public class Datasource {
             }
         }
     }
-
+    public void updateEmployeeEndDateByName(String endDate,String firstName, String lastName) {
+        try{
+            connection.setAutoCommit(false);
+            updateEmployeeEndDate.setString(1,endDate);
+            updateEmployeeEndDate.setString(2,firstName);
+            updateEmployeeEndDate.setString(3,lastName);
+            int affectedRows = updateEmployeeEndDate.executeUpdate();
+            if(affectedRows == 1) {
+                System.out.println("Employee Update Succeed");
+                connection.commit();
+            } else {
+                throw new SQLException("The employee insert failed");
+            }
+        }catch (Exception e){
+            System.out.println("Update Employee exception: " + e.getMessage());
+            try {
+                System.out.println("Performing rollback");
+                connection.rollback();
+            } catch(SQLException e2) {
+                System.out.println("Oh boy! Things are really bad! " + e2.getMessage());
+            }finally {
+                try {
+                    System.out.println("Resetting default commit behavior");
+                    connection.setAutoCommit(true);
+                } catch(SQLException e1) {
+                    System.out.println("Couldn't reset auto-commit! " + e1.getMessage());
+                }
+            }
+        }
+    }
 }

@@ -32,19 +32,22 @@ public class Main {
                     searchEmployeeByName(datasource);
                     break;
                 case 5:
-//                    datasource.insertNewEmployee();
+                    insertNewEmployeeToDB(datasource);
                     break;
                 case 6:
-                    datasource.updateEmployeeSalaryByName();
+                    updateEmployeeSalary(datasource);
                     break;
                 case 7:
+                    updateEmployeeEndDate(datasource);
+                    break;
+                case 8:
                     System.out.println("Goodbye");
                     break;
                 default:
                     System.out.println("Not an option");
                     break;
             }
-        }while (option != 7);
+        }while (option != 8);
 
         // Close connection
         datasource.close();
@@ -57,7 +60,8 @@ public class Main {
         System.out.println("4) Search Employee Info By Name");
         System.out.println("5) Add New Employee");
         System.out.println("6) Update Employee Salary");
-        System.out.println("7) Exit");
+        System.out.println("7) Update Employee End Date");
+        System.out.println("8) Exit");
         System.out.print("Enter Your Option: ");
         System.out.println();
     }
@@ -75,7 +79,7 @@ public class Main {
                     "\nSalary: $"+employee.getSalary()+
                     "\nTitle: "+employee.getTitle_Name()+
                     "\nDepartment: "+employee.getDepartment_Name()+
-                    "Start Date: "+employee.getStart_Date()+
+                    "\nStart Date: "+employee.getStart_Date()+
                     "\nEnd Date: "+employee.getEnd_Date());
         }
     }
@@ -133,5 +137,62 @@ public class Main {
             System.out.println("Start Date: "+employee.getStart_Date());
             System.out.println("End Date: "+employee.getEnd_Date());
         }
+    }
+
+    public static void insertNewEmployeeToDB(Datasource datasource){
+        System.out.println("----> Insert New Employee To Database <----");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter First Name: ");
+        String firstName = scanner.next();
+        System.out.println("Enter Last Name: ");
+        String lastName = scanner.next();
+        scanner.nextLine();
+        System.out.println("Enter Job Title: ");
+        String titleName = scanner.nextLine();
+        while(datasource.queryTitleIdByTitle(titleName) == -1){
+            System.out.println("No Such Job Title, Please Enter Again: ");
+            titleName = scanner.nextLine();
+        }
+        int title = datasource.queryTitleIdByTitle(titleName);
+        System.out.println("Enter Salary: ");
+        double salary = scanner.nextDouble();
+        System.out.println("Enter startDate: ");
+        String startDate = scanner.next();
+        scanner.nextLine();
+        System.out.println("Enter Status: ");
+        String status = scanner.nextLine();
+        while(datasource.queryEmploymentStatusIdByStatus(status) == -1){
+            System.out.println("No Such Status, Please Enter Again: ");
+            status = scanner.nextLine();
+        }
+        int statusName = datasource.queryEmploymentStatusIdByStatus(status);
+
+        datasource.insertNewEmployee(firstName,lastName,title,salary,startDate,statusName);
+    }
+
+    public static void updateEmployeeSalary(Datasource datasource){
+        System.out.println("----> Update Employee Salary By Name <----");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter Employee First Name: ");
+        String firstName = scanner.next();
+        System.out.println("Enter Employee Last Name: ");
+        String lastName = scanner.next();
+        System.out.println("Enter Employee New Salary: ");
+        double newSalary = scanner.nextDouble();
+
+        datasource.updateEmployeeSalaryByName(newSalary,firstName,lastName);
+    }
+
+    public static void updateEmployeeEndDate(Datasource datasource){
+        System.out.println("----> Update Employee End Date By Name <----");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter Employee First Name: ");
+        String firstName = scanner.next();
+        System.out.println("Enter Employee Last Name: ");
+        String lastName = scanner.next();
+        System.out.println("Enter Employee End Date: ");
+        String endDate = scanner.next();
+
+        datasource.updateEmployeeEndDateByName(endDate,firstName,lastName);
     }
 }
